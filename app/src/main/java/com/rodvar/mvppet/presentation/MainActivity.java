@@ -1,8 +1,10 @@
-package com.rodvar.mvppet;
+package com.rodvar.mvppet.presentation;
 
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.rodvar.mvppet.R;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -13,13 +15,14 @@ import nucleus.view.NucleusActivity;
 /**
  * Thanks to the usage of MVP, this view only codes handling of its views and population of data,
  * regardless where this data was taken from.
- *
+ * <p/>
  * RequiresPresenter ensure the presenter instance is not loss on a config change or activity restart
  */
 @RequiresPresenter(MainPresenter.class)
 public class MainActivity extends NucleusActivity<MainPresenter> {
 
-    @Bind(R.id.txtContent) TextView txt;
+    @Bind(R.id.txtContent)
+    TextView txt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
