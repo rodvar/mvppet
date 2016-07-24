@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Mvppet</string>
+    <string name="app_name">Let\'s</string>
+    <string name="default_section_subtitle">Upcoming Events</string>
+    <string name="no_events">No events coming!</string>
 </resources>

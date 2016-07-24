@@ -1,8 +1,17 @@
 package com.rodvar.mvppet.presentation;
 
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
-import nucleus.presenter.Presenter;
+import com.rodvar.mvppet.LetsApp;
+import com.rodvar.mvppet.data.network.ServerAPI;
+
+import nucleus.presenter.RxPresenter;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action2;
+import rx.functions.Func0;
 
 /**
  * Created by rodrigo on 18/07/16.
@@ -10,23 +19,56 @@ import nucleus.presenter.Presenter;
  * - Getting the data needed for the view
  * - passing the data or informing error to the view
  */
-public class MainPresenter extends Presenter<MainActivity> {
+public class MainPresenter extends RxPresenter<MainFragment> {
 
-    private MainActivity view;
+    private static final int REQUEST_ITEMS = 1;
 
-    private Object data;
+    private MainFragment view;
+
+    private ServerAPI.Item[] data;
     private Throwable error;
 
     public MainPresenter() {
-        // TODO query RxJava
         Log.d(getClass().getSimpleName(), "Presenter created");
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedState) {
+        super.onCreate(savedState);
+
+        restartableLatestCache(REQUEST_ITEMS,
+                new Func0<Observable<ServerAPI.Response>>() {
+                    @Override
+                    public Observable<ServerAPI.Response> call() {
+                        return LetsApp.getServerAPI()
+                                .getUpcomingEvents("Rocky", "Varela", 0)
+                                .observeOn(AndroidSchedulers.mainThread());
+                    }
+                },
+                new Action2<MainFragment, ServerAPI.Response>() {
+                    @Override
+                    public void call(MainFragment activity, ServerAPI.Response response) {
+                        data = response.items;
+                        publish();
+                    }
+                },
+                new Action2<MainFragment, Throwable>() {
+                    @Override
+                    public void call(MainFragment activity, Throwable throwable) {
+                        error = throwable;
+                        publish();
+                    }
+                });
+
+        if (savedState == null)
+            start(REQUEST_ITEMS);
     }
 
     /**
      * @param view view that needs presentation
      */
     @Override
-    public void onTakeView(MainActivity view) {
+    public void onTakeView(MainFragment view) {
         super.onTakeView(view);
         this.view = view;
         this.publish();
@@ -37,10 +79,17 @@ public class MainPresenter extends Presenter<MainActivity> {
      */
     private void publish() {
         if (view != null) {
-            if (data != null)
-                view.onModelFetchSuccess(data);
-            else if (error != null)
-                view.onModelFetchError(error);
+            if (data != null) {
+                Log.d(getClass().getSimpleName(), "Publish calling success callback..");
+                view.onRequestSuccess(data);
+            } else if (error != null) {
+                Log.d(getClass().getSimpleName(), "Publish calling error callback..");
+                view.onNetworkError(error);
+            }
         }
+    }
+
+    public void request() {
+        Log.d(getClass().getSimpleName(), "Executing request to server");
     }
 }

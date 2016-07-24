@@ -1,16 +1,10 @@
 package com.rodvar.mvppet.presentation;
 
 import android.os.Bundle;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.rodvar.mvppet.R;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import nucleus.factory.RequiresPresenter;
-import nucleus.view.NucleusActivity;
+import nucleus.view.NucleusActionBarActivity;
 
 /**
  * Thanks to the usage of MVP, this view only codes handling of its views and population of data,
@@ -18,30 +12,21 @@ import nucleus.view.NucleusActivity;
  * <p/>
  * RequiresPresenter ensure the presenter instance is not loss on a config change or activity restart
  */
-@RequiresPresenter(MainPresenter.class)
-public class MainActivity extends NucleusActivity<MainPresenter> {
-
-    @Bind(R.id.txtContent)
-    TextView txt;
+public class MainActivity extends NucleusActionBarActivity<MainPresenter> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
-        this.txt.setText("Nucleus rules!");
+        this.setContentView(R.layout.activity_main);
+        this.setSubTitle(this.getString(R.string.default_section_subtitle));
+        this.loadFragment(R.id.main_fragment, MainFragment.newInstance());
     }
 
-    @OnClick(R.id.txtContent)
-    public void onClickTxt() {
-        Toast.makeText(this, "Click!", Toast.LENGTH_SHORT).show();
+    public void setSubTitle(String subTitle) {
+        this.getSupportActionBar().setSubtitle(subTitle);
     }
 
-    public void onModelFetchSuccess(Object data) {
-        Toast.makeText(this, "Do sth on success!", Toast.LENGTH_SHORT).show();
-    }
-
-    public void onModelFetchError(Throwable error) {
-        Toast.makeText(this, "Do sth on error! " + error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+    private void loadFragment(int replaceResId, MainFragment fragment) {
+        this.getFragmentManager().beginTransaction().replace(replaceResId, fragment).commit();
     }
 }
