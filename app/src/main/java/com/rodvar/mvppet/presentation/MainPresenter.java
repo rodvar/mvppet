@@ -5,7 +5,9 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.rodvar.mvppet.LetsApp;
-import com.rodvar.mvppet.data.network.ServerAPI;
+import com.rodvar.mvppet.domain.Event;
+
+import java.util.List;
 
 import nucleus.presenter.RxPresenter;
 import rx.Observable;
@@ -25,7 +27,7 @@ public class MainPresenter extends RxPresenter<MainFragment> {
 
     private MainFragment view;
 
-    private ServerAPI.Item[] data;
+    private List<Event> data;
     private Throwable error;
 
     public MainPresenter() {
@@ -36,29 +38,7 @@ public class MainPresenter extends RxPresenter<MainFragment> {
     protected void onCreate(@Nullable Bundle savedState) {
         super.onCreate(savedState);
 
-        restartableLatestCache(REQUEST_ITEMS,
-                new Func0<Observable<ServerAPI.Response>>() {
-                    @Override
-                    public Observable<ServerAPI.Response> call() {
-                        return LetsApp.getServerAPI()
-                                .getUpcomingEvents("Rocky", "Varela", 0)
-                                .observeOn(AndroidSchedulers.mainThread());
-                    }
-                },
-                new Action2<MainFragment, ServerAPI.Response>() {
-                    @Override
-                    public void call(MainFragment activity, ServerAPI.Response response) {
-                        data = response.items;
-                        publish();
-                    }
-                },
-                new Action2<MainFragment, Throwable>() {
-                    @Override
-                    public void call(MainFragment activity, Throwable throwable) {
-                        error = throwable;
-                        publish();
-                    }
-                });
+        this.request();
 
         if (savedState == null)
             start(REQUEST_ITEMS);
@@ -91,5 +71,29 @@ public class MainPresenter extends RxPresenter<MainFragment> {
 
     public void request() {
         Log.d(getClass().getSimpleName(), "Executing request to server");
+
+        restartableLatestCache(REQUEST_ITEMS,
+                new Func0<Observable<List<Event>>>() {
+                    @Override
+                    public Observable<List<Event>> call() {
+                        return LetsApp.getServerAPI()
+                                .getUpcomingEvents()
+                                .observeOn(AndroidSchedulers.mainThread());
+                    }
+                },
+                new Action2<MainFragment, List<Event>>() {
+                    @Override
+                    public void call(MainFragment activity, List<Event> response) {
+                        data = response;
+                        publish();
+                    }
+                },
+                new Action2<MainFragment, Throwable>() {
+                    @Override
+                    public void call(MainFragment activity, Throwable throwable) {
+                        error = throwable;
+                        publish();
+                    }
+                });
     }
 }

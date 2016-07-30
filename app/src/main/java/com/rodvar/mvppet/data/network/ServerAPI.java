@@ -1,13 +1,11 @@
 package com.rodvar.mvppet.data.network;
 
-import android.text.Html;
+import com.rodvar.mvppet.domain.Event;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.List;
 
 import retrofit.http.GET;
-import retrofit.http.Header;
 import retrofit.http.Path;
-import retrofit.http.Query;
 import rx.Observable;
 
 /**
@@ -15,36 +13,11 @@ import rx.Observable;
  */
 public interface ServerAPI {
 
-    String ENDPOINT = "http://api.icndb.com";
+    String ENDPOINT = "http://192.168.0.6:3000";
 
-    class Item {
+    @GET("/events")
+    Observable<List<Event>> getUpcomingEvents();
 
-        public int id;
-
-        @SerializedName("joke")
-        public String text;
-
-        @Override
-        public String toString() {
-            return Html.fromHtml(text).toString();
-        }
-    }
-
-    class Response {
-        @SerializedName("value")
-        public Item[] items;
-    }
-
-    class ItemResponse {
-        @SerializedName("value")
-        public Item item;
-    }
-
-    @GET("/jokes/random/20")
-    Observable<Response> getUpcomingEvents(@Query("firstName") String firstName
-            , @Query("lastName") String lastName, @Header("pageNumber") int pageNumberIgnored);
-
-    @GET("/jokes/{id}")
-    Observable<ItemResponse> getItem(@Query("firstName") String firstName
-            , @Query("lastName") String lastName, @Path("id") int id);
+    @GET("/events/{id}")
+    Observable<Event> getItem(@Path("id") int id);
 }
