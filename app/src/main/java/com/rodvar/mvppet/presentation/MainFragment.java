@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +34,7 @@ import rx.functions.Action1;
 public class MainFragment extends NucleusFragment<MainPresenter> {
 
     @Bind(R.id.events_view)
-    RecyclerView view;
+    RecyclerView recyclerView;
     @Bind(R.id.empty_view)
     TextView emptyView;
     private GridLayoutManager layoutManager;
@@ -45,6 +46,28 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
     public static MainFragment newInstance() {
         return new MainFragment();
     }
+
+    private boolean canLoadMore;
+
+    private RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            int pastVisiblesItems, visibleItemCount, totalItemCount;
+            if (dy > 0) { //scroll down
+                visibleItemCount = layoutManager.getChildCount();
+                totalItemCount = layoutManager.getItemCount();
+                pastVisiblesItems = layoutManager.findFirstVisibleItemPosition();
+
+                if (canLoadMore) {
+                    if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                        canLoadMore = false;
+                        Log.v("...", "Last Item Wow !");
+                        getPresenter().request();
+                    }
+                }
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -58,10 +81,10 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, view);
-        // decorate recycle view?
-        this.view.setHasFixedSize(true);
+        // decorate recycle recyclerView?
         this.layoutManager = new GridLayoutManager(this.getActivity(), 2);
-        this.view.setLayoutManager(this.layoutManager);
+        this.recyclerView.setLayoutManager(this.layoutManager);
+        this.recyclerView.addOnScrollListener(this.scrollListener);
         this.adapter = new SimpleListAdapter<>(R.layout.recycler_view_progress,
                 new ClassViewHolderType<>(ServerAPI.Item.class, R.layout.item, new ClassViewHolderType.ViewHolderFactory<ServerAPI.Item>() {
                     @Override
@@ -74,13 +97,14 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
                         });
                     }
                 }));
-        this.view.setAdapter(this.adapter);
+        this.recyclerView.setAdapter(this.adapter);
         return view;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        this.recyclerView.removeOnScrollListener(this.scrollListener);
         ButterKnife.unbind(this);
     }
 
@@ -88,8 +112,9 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
      * @param items
      */
     public void onRequestSuccess(ServerAPI.Item[] items) {
-        this.adapter.set(Arrays.asList(items));
+        this.adapter.add(Arrays.asList(items));
         this.viewData(true);
+        this.canLoadMore = true;
     }
 
     public void onNetworkError(Throwable throwable) {
@@ -99,6 +124,6 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
 
     private void viewData(boolean showData) {
         this.emptyView.setVisibility(!showData ? View.VISIBLE : View.GONE);
-        this.view.setVisibility(showData ? View.VISIBLE : View.GONE);
+        this.recyclerView.setVisibility(showData ? View.VISIBLE : View.GONE);
     }
 }

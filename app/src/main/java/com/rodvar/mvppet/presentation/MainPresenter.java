@@ -16,8 +16,8 @@ import rx.functions.Func0;
 /**
  * Created by rodrigo on 18/07/16.
  * Responsible for:
- * - Getting the data needed for the view
- * - passing the data or informing error to the view
+ * - Getting the data needed for the recyclerView
+ * - passing the data or informing error to the recyclerView
  */
 public class MainPresenter extends RxPresenter<MainFragment> {
 
@@ -36,6 +36,12 @@ public class MainPresenter extends RxPresenter<MainFragment> {
     protected void onCreate(@Nullable Bundle savedState) {
         super.onCreate(savedState);
 
+        this.initAPICall();
+        if (savedState == null)
+            this.request();
+    }
+
+    private void initAPICall() {
         restartableLatestCache(REQUEST_ITEMS,
                 new Func0<Observable<ServerAPI.Response>>() {
                     @Override
@@ -59,13 +65,10 @@ public class MainPresenter extends RxPresenter<MainFragment> {
                         publish();
                     }
                 });
-
-        if (savedState == null)
-            start(REQUEST_ITEMS);
     }
 
     /**
-     * @param view view that needs presentation
+     * @param view recyclerView that needs presentation
      */
     @Override
     public void onTakeView(MainFragment view) {
@@ -75,7 +78,7 @@ public class MainPresenter extends RxPresenter<MainFragment> {
     }
 
     /**
-     * Publish data to the view or indicates error if its the case
+     * Publish data to the recyclerView or indicates error if its the case
      */
     private void publish() {
         if (view != null) {
@@ -91,5 +94,6 @@ public class MainPresenter extends RxPresenter<MainFragment> {
 
     public void request() {
         Log.d(getClass().getSimpleName(), "Executing request to server");
+        start(REQUEST_ITEMS);
     }
 }

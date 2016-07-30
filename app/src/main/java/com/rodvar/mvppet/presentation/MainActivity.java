@@ -7,7 +7,7 @@ import com.rodvar.mvppet.R;
 import nucleus.view.NucleusActionBarActivity;
 
 /**
- * Thanks to the usage of MVP, this view only codes handling of its views and population of data,
+ * Thanks to the usage of MVP, this recyclerView only codes handling of its views and population of data,
  * regardless where this data was taken from.
  * <p/>
  * RequiresPresenter ensure the presenter instance is not loss on a config change or activity restart
