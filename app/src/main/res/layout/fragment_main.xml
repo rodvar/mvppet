@@ -9,6 +9,15 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
+    <ProgressBar
+        android:id="@+id/loading_view"
+        style="?android:progressBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:padding="150dp"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/empty_view"
         android:layout_width="match_parent"

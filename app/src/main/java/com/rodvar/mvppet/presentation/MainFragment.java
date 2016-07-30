@@ -61,19 +61,20 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
                 if (canLoadMore) {
                     if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
                         canLoadMore = false;
-                        Log.v("...", "Last Item Wow !");
-                        getPresenter().request();
+                        Log.v(getClass().getSimpleName(), "Request more data");
+                        requestData();
                     }
                 }
             }
         }
     };
 
-    @Override
-    public void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
-        if (bundle == null)
-            this.getPresenter().request();
+    /**
+     * Request more data to the presenter
+     */
+    private void requestData() {
+        this.loadData(true);
+        this.getPresenter().request();
     }
 
     @Nullable
@@ -98,6 +99,7 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
                     }
                 }));
         this.recyclerView.setAdapter(this.adapter);
+        this.requestData();
         return view;
     }
 
@@ -113,13 +115,23 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
      */
     public void onRequestSuccess(ServerAPI.Item[] items) {
         this.adapter.add(Arrays.asList(items));
+        this.loadData(false);
         this.viewData(true);
         this.canLoadMore = true;
     }
 
     public void onNetworkError(Throwable throwable) {
         Toast.makeText(getActivity(), throwable.getMessage(), Toast.LENGTH_LONG).show();
+        this.loadData(false);
         this.viewData(false);
+    }
+
+    private void loadData(boolean loading) {
+        if (loading)
+            this.adapter.showProgress();
+        else
+            this.adapter.hideProgress();
+        //this.recyclerView.setVisibility(!loading ? View.VISIBLE : View.GONE);
     }
 
     private void viewData(boolean showData) {
