@@ -23,7 +23,7 @@ public class LetsApp extends Application {
                 .setLog(new RestAdapter.Log() {
                     @Override
                     public void log(String message) {
-                        Log.v("Retrofit", message);
+                        Log.d("Retrofit", message);
                     }
                 })
                 .build().create(ServerAPI.class);

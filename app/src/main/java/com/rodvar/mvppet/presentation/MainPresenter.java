@@ -17,7 +17,7 @@ import rx.functions.Func0;
  * Created by rodrigo on 18/07/16.
  * Responsible for:
  * - Getting the data needed for the recyclerView
- * - passing the data or informing error to the recyclerView
+ * - passing the data or informing error to view
  */
 public class MainPresenter extends RxPresenter<MainFragment> {
 
