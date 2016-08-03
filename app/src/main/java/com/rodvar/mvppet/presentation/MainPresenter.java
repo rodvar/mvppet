@@ -7,6 +7,8 @@ import android.util.Log;
 import com.rodvar.mvppet.LetsApp;
 import com.rodvar.mvppet.data.network.ServerAPI;
 
+import icepick.Icepick;
+import icepick.State;
 import nucleus.presenter.RxPresenter;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -28,6 +30,9 @@ public class MainPresenter extends RxPresenter<MainFragment> {
     private ServerAPI.Item[] data;
     private Throwable error;
 
+    @State String name = "Rocky";
+    @State String surname = "Varela";
+
     public MainPresenter() {
         Log.d(getClass().getSimpleName(), "Presenter created");
     }
@@ -36,9 +41,17 @@ public class MainPresenter extends RxPresenter<MainFragment> {
     protected void onCreate(@Nullable Bundle savedState) {
         super.onCreate(savedState);
 
+        Icepick.restoreInstanceState(this, savedState);
+
         this.initAPICall();
         if (savedState == null)
             this.request();
+    }
+
+    @Override
+    protected void onSave(Bundle state) {
+        super.onSave(state);
+        Icepick.saveInstanceState(this, state);
     }
 
     private void initAPICall() {
@@ -47,7 +60,7 @@ public class MainPresenter extends RxPresenter<MainFragment> {
                     @Override
                     public Observable<ServerAPI.Response> call() {
                         return LetsApp.getServerAPI()
-                                .getUpcomingEvents("Rocky", "Varela", 0)
+                                .getUpcomingEvents(name, surname, 0)
                                 .observeOn(AndroidSchedulers.mainThread());
                     }
                 },

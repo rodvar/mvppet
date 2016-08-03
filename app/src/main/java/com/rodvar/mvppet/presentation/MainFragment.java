@@ -39,6 +39,7 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
     TextView emptyView;
     private GridLayoutManager layoutManager;
     private SimpleListAdapter<ServerAPI.Item> adapter;
+    private boolean canLoadMore;
 
     /**
      * @return new MainFragment instance
@@ -47,7 +48,6 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
         return new MainFragment();
     }
 
-    private boolean canLoadMore;
 
     private RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
         @Override
@@ -73,7 +73,7 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
      * Request more data to the presenter
      */
     private void requestData() {
-        this.loadData(true);
+        this.showLoading(true);
         this.getPresenter().request();
     }
 
@@ -115,23 +115,22 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
      */
     public void onRequestSuccess(ServerAPI.Item[] items) {
         this.adapter.add(Arrays.asList(items));
-        this.loadData(false);
+        this.showLoading(false);
         this.viewData(true);
         this.canLoadMore = true;
     }
 
     public void onNetworkError(Throwable throwable) {
         Toast.makeText(getActivity(), throwable.getMessage(), Toast.LENGTH_LONG).show();
-        this.loadData(false);
+        this.showLoading(false);
         this.viewData(false);
     }
 
-    private void loadData(boolean loading) {
+    private void showLoading(boolean loading) {
         if (loading)
             this.adapter.showProgress();
         else
             this.adapter.hideProgress();
-        //this.recyclerView.setVisibility(!loading ? View.VISIBLE : View.GONE);
     }
 
     private void viewData(boolean showData) {
