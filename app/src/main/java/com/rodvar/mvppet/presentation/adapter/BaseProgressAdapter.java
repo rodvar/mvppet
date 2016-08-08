@@ -6,7 +6,7 @@ import android.view.ViewGroup;
 /**
  * based on nucleus-example-real-life
  */
-public abstract class BaseProgressAdapter extends BaseRecyclerViewAdapter {
+public abstract class BaseProgressAdapter extends BaseRecyclerViewAdapter implements IBaseProgressAdapter {
 
     private final int progressViewId;
     private boolean progress;

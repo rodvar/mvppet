@@ -1,10 +1,10 @@
 package com.rodvar.mvppet.presentation.adapter;
 
-import android.support.v7.widget.RecyclerView;
-import android.view.ViewGroup;
-
 import java.util.Collections;
 import java.util.List;
+
+import android.support.v7.widget.RecyclerView;
+import android.view.ViewGroup;
 
 import static java.util.Arrays.asList;
 

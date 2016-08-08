@@ -1,16 +1,14 @@
 package com.rodvar.mvppet.presentation;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.rodvar.mvppet.R;
 
 import nucleus.view.NucleusActionBarActivity;
 
 /**
- * Thanks to the usage of MVP, this recyclerView only codes handling of its views and population of data,
- * regardless where this data was taken from.
- * <p/>
- * RequiresPresenter ensure the presenter instance is not loss on a config change or activity restart
+ * Main activity, delegates work to fragments.
  */
 public class MainActivity extends NucleusActionBarActivity<MainPresenter> {
 
@@ -26,7 +24,16 @@ public class MainActivity extends NucleusActionBarActivity<MainPresenter> {
         this.getSupportActionBar().setSubtitle(subTitle);
     }
 
+    /**
+     *
+     * @param replaceResId
+     * @param fragment
+     */
     private void loadFragment(int replaceResId, MainFragment fragment) {
-        this.getFragmentManager().beginTransaction().replace(replaceResId, fragment).commit();
+        try {
+            this.getFragmentManager().beginTransaction().replace(replaceResId, fragment).commit();
+        } catch (Exception e) {
+            Log.e(getClass().getSimpleName(), "Failed to load fragment", e);
+        }
     }
 }

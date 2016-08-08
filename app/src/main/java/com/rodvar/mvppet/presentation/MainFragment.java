@@ -1,13 +1,11 @@
 package com.rodvar.mvppet.presentation;
 
-import android.os.Bundle;
-import android.support.annotation.Nullable;
+import java.util.Arrays;
+
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,15 +13,12 @@ import com.rodvar.mvppet.R;
 import com.rodvar.mvppet.data.network.ServerAPI;
 import com.rodvar.mvppet.presentation.adapter.BaseViewHolder;
 import com.rodvar.mvppet.presentation.adapter.ClassViewHolderType;
+import com.rodvar.mvppet.presentation.adapter.IBaseProgressAdapter;
 import com.rodvar.mvppet.presentation.adapter.SimpleListAdapter;
 import com.rodvar.mvppet.presentation.adapter.SimpleViewHolder;
 
-import java.util.Arrays;
-
 import butterknife.Bind;
-import butterknife.ButterKnife;
 import nucleus.factory.RequiresPresenter;
-import nucleus.view.NucleusFragment;
 import rx.functions.Action1;
 
 /**
@@ -31,7 +26,7 @@ import rx.functions.Action1;
  * Shows the lists of events
  */
 @RequiresPresenter(MainPresenter.class)
-public class MainFragment extends NucleusFragment<MainPresenter> {
+public class MainFragment extends BaseFragment<MainPresenter, ServerAPI.Item> {
 
     @Bind(R.id.events_view)
     RecyclerView recyclerView;
@@ -39,7 +34,6 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
     TextView emptyView;
     private GridLayoutManager layoutManager;
     private SimpleListAdapter<ServerAPI.Item> adapter;
-    private boolean canLoadMore;
 
     /**
      * @return new MainFragment instance
@@ -58,9 +52,9 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
                 totalItemCount = layoutManager.getItemCount();
                 pastVisiblesItems = layoutManager.findFirstVisibleItemPosition();
 
-                if (canLoadMore) {
+                if (isReadyToLoadMoreData()) {
                     if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
-                        canLoadMore = false;
+                        setReadyToLoadMoreData(false);
                         Log.v(getClass().getSimpleName(), "Request more data");
                         requestData();
                     }
@@ -69,19 +63,8 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
         }
     };
 
-    /**
-     * Request more data to the presenter
-     */
-    private void requestData() {
-        this.showLoading(true);
-        this.getPresenter().request();
-    }
-
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_main, container, false);
-        ButterKnife.bind(this, view);
+    protected void doOnCreateView(View rootView) {
         // decorate recycle recyclerView?
         this.layoutManager = new GridLayoutManager(this.getActivity(), 2);
         this.recyclerView.setLayoutManager(this.layoutManager);
@@ -99,42 +82,41 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
                     }
                 }));
         this.recyclerView.setAdapter(this.adapter);
-        this.requestData();
-        return view;
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         this.recyclerView.removeOnScrollListener(this.scrollListener);
-        ButterKnife.unbind(this);
+        super.onDestroy();
     }
 
-    /**
-     * @param items
-     */
-    public void onRequestSuccess(ServerAPI.Item[] items) {
+    @Override
+    protected void doOnRequestSucceded(ServerAPI.Item[] items) {
         this.adapter.add(Arrays.asList(items));
-        this.showLoading(false);
-        this.viewData(true);
-        this.canLoadMore = true;
     }
 
-    public void onNetworkError(Throwable throwable) {
+    @Override
+    protected void doOnRequestFailed(Throwable throwable) {
         Toast.makeText(getActivity(), throwable.getMessage(), Toast.LENGTH_LONG).show();
-        this.showLoading(false);
-        this.viewData(false);
     }
 
-    private void showLoading(boolean loading) {
-        if (loading)
-            this.adapter.showProgress();
-        else
-            this.adapter.hideProgress();
+    @Override
+    protected IBaseProgressAdapter getMainAdapter() {
+        return this.adapter;
     }
 
-    private void viewData(boolean showData) {
-        this.emptyView.setVisibility(!showData ? View.VISIBLE : View.GONE);
-        this.recyclerView.setVisibility(showData ? View.VISIBLE : View.GONE);
+    @Override
+    protected View getEmptyView() {
+        return this.emptyView;
+    }
+
+    @Override
+    protected View getMainRecyclerView() {
+        return this.recyclerView;
+    }
+
+    @Override
+    protected int getFragmentLayoutResId() {
+        return R.layout.fragment_main;
     }
 }
